@@ -88,7 +88,7 @@ func (cm *CoffeeMachine) dispenseCoffee(coffee *Coffee, payment Payment) error {
 		return errors.New("invalid choice of coffee")
 	}
 	if payment.amount < coffee.price {
-		return errors.New(fmt.Sprintf("insufficient payment for %s, price: %d, paid: %d\n",
+		return errors.New(fmt.Sprintf("insufficient payment for %s, price: %d, paid: %d",
 			coffee.name, coffee.price, payment.amount))
 	}
 	_, err := cm.checkIngredients(coffee)
