@@ -1,5 +1,7 @@
 package coffeemachine
 
-func Run() {
+import "fmt"
 
+func Run() {
+	fmt.Println("zook zook! coffee machine is running")
 }

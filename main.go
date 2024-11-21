@@ -1,4 +1,4 @@
-package machine_coding_ka_halwa
+package main
 
 import "machine-coding-ka-halwa/coffeemachine"
 
