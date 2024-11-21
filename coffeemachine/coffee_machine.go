@@ -1,8 +1,10 @@
 package coffeemachine
 
 import (
+	"errors"
 	"fmt"
 	"sync"
+	"time"
 )
 
 type CoffeeMachine struct {
@@ -48,7 +50,7 @@ func (cm *CoffeeMachine) initCoffeeMenu() {
 	espressoRecipe := map[*Ingredient]int{
 		cm.ingredients["coffee"]: 3,
 		cm.ingredients["milk"]:   0,
-		cm.ingredients["water"]:  3,
+		cm.ingredients["water"]:  6,
 	}
 
 	latte := NewCoffee("latte", 20, latteRecipe)
@@ -64,4 +66,56 @@ func (cm *CoffeeMachine) displayMenu() {
 	}
 }
 
-//func (cm *CoffeeMachine)
+func (cm *CoffeeMachine) makePayment(amount int32) Payment {
+	return Payment{amount: amount}
+}
+
+func (cm *CoffeeMachine) selectCoffee(name string) *Coffee {
+	cm.mu.Lock()
+	defer cm.mu.Unlock()
+	for _, item := range cm.coffeeMenu {
+		if item.name == name {
+			return item
+		}
+	}
+	return nil
+}
+
+func (cm *CoffeeMachine) dispenseCoffee(coffee *Coffee, payment Payment) error {
+	cm.mu.Lock()
+	defer cm.mu.Unlock()
+	if coffee == nil {
+		return errors.New("invalid choice of coffee")
+	}
+	if payment.amount < coffee.price {
+		return errors.New(fmt.Sprintf("insufficient payment for %s, price: %d, paid: %d\n",
+			coffee.name, coffee.price, payment.amount))
+	}
+	_, err := cm.checkIngredients(coffee)
+	if err != nil {
+		return err
+	} else {
+		fmt.Printf("%s has been served. enjoy!!\n", coffee.name)
+		cm.updateIngredients(coffee)
+		return nil
+	}
+}
+
+func (cm *CoffeeMachine) checkIngredients(coffee *Coffee) (bool, error) {
+	for ingredient, reqQuantity := range coffee.getRecipe() {
+		if ingredient.GetQuantity() < reqQuantity {
+			return false, errors.New(fmt.Sprintf("can't brew %s, running low on %s", coffee.name, ingredient.name))
+		}
+	}
+	return true, nil
+}
+
+func (cm *CoffeeMachine) updateIngredients(coffee *Coffee) {
+	for ingredient, reqQuantity := range coffee.getRecipe() {
+		ingredient.UpdateQuantity(-reqQuantity)
+		if ingredient.GetQuantity() < 3 {
+			fmt.Printf("%s running low\n", ingredient.name)
+		}
+	}
+	time.Sleep(1 * time.Second)
+}
