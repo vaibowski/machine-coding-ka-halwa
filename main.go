@@ -1,7 +1,9 @@
 package main
 
-import "machine-coding-ka-halwa/coffeemachine"
+import "machine-coding-ka-halwa/digitalwallet"
 
 func main() {
-	coffeemachine.Run()
+	//coffeemachine.Run()
+
+	digitalwallet.Run()
 }
